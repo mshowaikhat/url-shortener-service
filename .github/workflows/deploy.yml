@@ -81,5 +81,17 @@ jobs:
             --project=${{ env.PROJECT_ID }} \
             --format='value(status.url)')
           echo "Service URL: $SERVICE_URL"
-          curl -sf "$SERVICE_URL/healthz"
-          echo ""
+
+          # Wait briefly for the new revision to start serving traffic
+          for i in 1 2 3 4 5 6; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL/healthz" || echo "000")
+            echo "Attempt $i: HTTP $STATUS"
+            if [ "$STATUS" = "200" ]; then
+              echo "Smoke test passed."
+              exit 0
+            fi
+            sleep 5
+          done
+
+          echo "Smoke test failed after 6 attempts."
+          exit 1
