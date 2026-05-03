@@ -1,0 +1,32 @@
+services:
+  firestore-emulator:
+    image: google/cloud-sdk:emulators
+    command: >
+      gcloud emulators firestore start
+      --host-port=0.0.0.0:8200
+      --project=swe455-urlshortener-252
+    ports:
+      - "8200:8200"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8200/ || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  shortener:
+    build: .
+    depends_on:
+      firestore-emulator:
+        condition: service_healthy
+    environment:
+      GCP_PROJECT_ID: swe455-urlshortener-252
+      FIRESTORE_COLLECTION: urls
+      LOG_LEVEL: INFO
+      REDIRECT_BASE_URL: http://localhost:8081
+      PORT: "8080"
+      # Tells the google-cloud-firestore client to talk to the emulator
+      # instead of real Firestore
+      FIRESTORE_EMULATOR_HOST: firestore-emulator:8200
+    ports:
+      - "8080:8080"

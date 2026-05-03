@@ -1,0 +1,170 @@
+openapi: 3.0.3
+info:
+  title: URL Shortener Service
+  description: |
+    Creates short codes that map to long URLs and stores them in Firestore.
+    Part of the SWE 455 (Cloud Applications Engineering) URL shortener project.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+  - url: https://shortener-m36t54hv3a-uc.a.run.app
+    description: Production (Cloud Run)
+
+paths:
+  /api/urls:
+    post:
+      summary: Create a short code for a long URL
+      operationId: createShortUrl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUrlRequest'
+      responses:
+        '201':
+          description: Short URL created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UrlRecord'
+        '400':
+          description: Invalid input (e.g., URL not http/https or malformed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error (e.g., short code collision after retries)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/urls/{code}:
+    get:
+      summary: Look up a URL record by its short code
+      operationId: getShortUrl
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9]{8}$'
+      responses:
+        '200':
+          description: Record found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UrlRecord'
+        '404':
+          description: Code not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /healthz:
+    get:
+      summary: Liveness probe
+      description: Returns 200 if the process is alive. Does NOT check backing services.
+      operationId: healthz
+      responses:
+        '200':
+          description: Process is alive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /readyz:
+    get:
+      summary: Readiness probe
+      description: Returns 200 only if the service can reach Firestore.
+      operationId: readyz
+      responses:
+        '200':
+          description: Service ready to handle traffic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Service not ready (e.g., Firestore unreachable)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+components:
+  schemas:
+    CreateUrlRequest:
+      type: object
+      required:
+        - long_url
+      properties:
+        long_url:
+          type: string
+          format: uri
+          example: https://www.kfupm.edu.sa/some/long/path
+
+    UrlRecord:
+      type: object
+      required:
+        - code
+        - long_url
+        - created_at
+        - click_count
+      properties:
+        code:
+          type: string
+          example: aB3kZ9pQ
+          description: 8-character base62 short code
+        long_url:
+          type: string
+          format: uri
+        short_url:
+          type: string
+          format: uri
+          description: Full short URL (only present in POST response)
+        created_at:
+          type: string
+          format: date-time
+        click_count:
+          type: integer
+          minimum: 0
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded]
+        details:
+          type: object
+          additionalProperties: true
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+        detail:
+          type: string
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: |
+        Will be enforced by Member B (Factor 15).
+        For now, all endpoints are publicly accessible.

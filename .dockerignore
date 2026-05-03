@@ -1,0 +1,19 @@
+# Don't ship anything we don't need into the image
+.git
+.gitignore
+.dockerignore
+.venv
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.coverage
+.env
+.env.*
+README.md
+docker-compose.yml
+Dockerfile
+openapi.yaml
+.github
+.vscode
+*.md
