@@ -1,9 +1,9 @@
 """Pydantic models for request, response, and Firestore documents."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
-from pydantic import BaseModel, Field, HttpUrl, field_validator
+from pydantic import BaseModel, HttpUrl, field_validator
 
 
 class CreateUrlRequest(BaseModel):
@@ -34,7 +34,7 @@ class UrlRecord(BaseModel):
         return cls(
             code=code,
             long_url=long_url,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
             click_count=0,
         )
 
