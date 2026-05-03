@@ -8,8 +8,8 @@ from app.models import HealthResponse
 router = APIRouter(tags=["health"])
 
 
-@router.get("/healthz", response_model=HealthResponse)
-async def healthz() -> HealthResponse:
+@router.get("/livez", response_model=HealthResponse)
+async def livez() -> HealthResponse:
     """Liveness — process is up. Does NOT check Firestore."""
     return HealthResponse(status="ok")
 

@@ -84,7 +84,7 @@ jobs:
 
           # Wait briefly for the new revision to start serving traffic
           for i in 1 2 3 4 5 6; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL/healthz" || echo "000")
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL/livez" || echo "000")
             echo "Attempt $i: HTTP $STATUS"
             if [ "$STATUS" = "200" ]; then
               echo "Smoke test passed."
