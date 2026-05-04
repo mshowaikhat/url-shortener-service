@@ -1,11 +1,12 @@
 import logging
-from fastapi import APIRouter, HTTPException, status, Depends
+
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.config import settings
 from app.firestore_client import create_if_absent, get_by_code
+from app.middleware.auth import require_api_key
 from app.models import CreateUrlRequest, UrlRecord
 from app.utils.shortcode import generate_short_code
-from app.middleware.auth import require_api_key
 
 logger = logging.getLogger(__name__)
 

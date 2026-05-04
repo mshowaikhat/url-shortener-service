@@ -1,12 +1,11 @@
 import secrets
-from typing import Optional
 
-from fastapi import Header, HTTPException, status, Depends
+from fastapi import Header, HTTPException, status
 from google.cloud import secretmanager
 
 from app.config import settings
 
-_cached_api_key: Optional[str] = None
+_cached_api_key: str | None = None
 
 
 def load_api_key() -> str:

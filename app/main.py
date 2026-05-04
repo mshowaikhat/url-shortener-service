@@ -1,10 +1,11 @@
 """FastAPI application entrypoint."""
 
 import logging
-from app.middleware.auth import load_api_key
+
 from fastapi import FastAPI
 
 from app.config import settings
+from app.middleware.auth import load_api_key
 from app.routes import health, urls
 
 # Basic logging setup. B will replace this with structured JSON in their slice.
