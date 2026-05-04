@@ -1,7 +1,7 @@
 """FastAPI application entrypoint."""
 
 import logging
-
+from app.middleware.auth import load_api_key
 from fastapi import FastAPI
 
 from app.config import settings
@@ -27,6 +27,7 @@ app.include_router(urls.router)
 
 @app.on_event("startup")
 async def on_startup() -> None:
+    load_api_key()
     logger.info(
         "shortener starting: project=%s collection=%s emulator=%s",
         settings.gcp_project_id,

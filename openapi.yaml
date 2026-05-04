@@ -13,10 +13,13 @@ servers:
     description: Production (Cloud Run)
 
 paths:
+  paths:
   /api/urls:
     post:
       summary: Create a short code for a long URL
       operationId: createShortUrl
+      security:
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -47,6 +50,8 @@ paths:
     get:
       summary: Look up a URL record by its short code
       operationId: getShortUrl
+      security:
+        - ApiKeyAuth: []
       parameters:
         - name: code
           in: path

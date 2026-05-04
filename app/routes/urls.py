@@ -1,17 +1,19 @@
-"""URL shortening endpoints."""
-
 import logging
-
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 
 from app.config import settings
 from app.firestore_client import create_if_absent, get_by_code
 from app.models import CreateUrlRequest, UrlRecord
 from app.utils.shortcode import generate_short_code
+from app.middleware.auth import require_api_key
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/urls", tags=["urls"])
+router = APIRouter(
+    prefix="/api/urls",
+    tags=["urls"],
+    dependencies=[Depends(require_api_key)]
+)
 
 MAX_COLLISION_RETRIES = 3
 
@@ -41,7 +43,6 @@ async def create_url(payload: CreateUrlRequest) -> UrlRecord:
             code,
         )
 
-    logger.error("failed to generate unique code after %d attempts", MAX_COLLISION_RETRIES)
     raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail="Could not generate a unique short code; please retry.",
