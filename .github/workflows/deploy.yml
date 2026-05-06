@@ -14,6 +14,7 @@ env:
   PROJECT_ID: swe455-urlshortener-252
   REGION: us-central1
   SERVICE_NAME: shortener
+  JOB_NAME: shortener-migrate
   AR_REPO: services
   WIF_PROVIDER: projects/142958366034/locations/global/workloadIdentityPools/github-pool/providers/github-provider
   WIF_SERVICE_ACCOUNT: shortener-deployer-sa@swe455-urlshortener-252.iam.gserviceaccount.com
@@ -69,6 +70,14 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+            --region=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} \
+            --quiet
+
+      - name: Update migration job image
+        run: |
+          gcloud run jobs update ${{ env.JOB_NAME }} \
             --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
             --region=${{ env.REGION }} \
             --project=${{ env.PROJECT_ID }} \
